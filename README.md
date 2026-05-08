@@ -85,6 +85,8 @@ Two actions are available at the top of the page:
 
 Click **View** on any submitted form. The form opens in read-only mode. The **Approval Status** panel at the bottom shows the current stage in the workflow and a history of who has approved it so far.
 
+Once a request reaches **Approved** status (both approval stages complete), a **Download PDF** button appears at the top of the form so users can export the full requisition details. The generated PDF includes a professional company-branded header and tabulated section data for easier review.
+
 ---
 
 ### Approver Flow

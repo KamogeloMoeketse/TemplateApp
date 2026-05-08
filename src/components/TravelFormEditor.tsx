@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   TravelForm,
@@ -10,7 +10,7 @@ import {
   ShuttleService,
   DailyAllowances as DailyAllowancesType,
 } from '@/types/travel-form';
-import { getSession, saveForm, generateTripNo, generateId } from '@/lib/store';
+import { saveForm, generateTripNo, generateId } from '@/lib/store';
 import { getSession as getAuthSession } from '@/lib/auth';
 import { ApplicationInfo } from './form-sections/ApplicationInfo';
 import { Flights } from './form-sections/Flights';
@@ -21,6 +21,7 @@ import { DailyAllowances } from './form-sections/DailyAllowances';
 import { ApprovalPanel } from './ApprovalPanel';
 import { Button } from './ui/Button';
 import { StatusBadge } from './ui/Badge';
+import { downloadTravelFormPdf } from '@/lib/pdf';
 
 interface Props {
   existingForm?: TravelForm;
@@ -60,11 +61,13 @@ export function TravelFormEditor({ existingForm }: Props) {
 
   const [saving, setSaving] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [savedMsg, setSavedMsg] = useState('');
 
   const isReadOnly = form.status !== 'Draft';
   const isApprover =
     user?.role === 'finance_approver' || user?.role === 'final_approver';
+  const canDownloadPdf = form.status === 'Approved';
 
   function updateField(field: string, value: string) {
     setForm((prev) => ({ ...prev, [field]: value, updatedAt: new Date().toISOString() }));
@@ -136,6 +139,15 @@ export function TravelFormEditor({ existingForm }: Props) {
     setForm(updated);
   }
 
+  function handleDownloadPdf() {
+    if (!canDownloadPdf) return;
+    setDownloadingPdf(true);
+    setTimeout(() => {
+      downloadTravelFormPdf(form);
+      setDownloadingPdf(false);
+    }, 100);
+  }
+
   if (!user) return null;
 
   return (
@@ -181,6 +193,14 @@ export function TravelFormEditor({ existingForm }: Props) {
               disabled={!form.travelFromDate || !form.purpose}
             >
               Submit for Approval
+            </Button>
+          </div>
+        )}
+
+        {canDownloadPdf && (
+          <div className="flex gap-3 flex-wrap items-center">
+            <Button variant="secondary" onClick={handleDownloadPdf} loading={downloadingPdf}>
+              Download PDF
             </Button>
           </div>
         )}
